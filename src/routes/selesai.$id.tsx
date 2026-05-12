@@ -205,11 +205,24 @@ function SuccessPage() {
           </div>
         )}
 
+        {data.excel_url && (
+          <a
+            href={data.excel_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            download
+            className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-primary/20 bg-card py-3.5 text-sm font-semibold text-primary shadow-sm transition active:scale-[0.98]"
+          >
+            <FileSpreadsheet className="h-5 w-5" />
+            Download Laporan (Excel .xlsx)
+          </a>
+        )}
+
         <div className="rounded-2xl border bg-card p-5 shadow-sm">
           <h2 className="text-base font-semibold">Kirim ke Staff Operasional</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Pesan WhatsApp berisi ringkasan + link laporan lengkap (termasuk
-            semua foto).
+            Pesan WhatsApp berisi ringkasan + link laporan online
+            {data.excel_url ? " + link file Excel" : ""}.
           </p>
           <a
             href={waUrl}
@@ -303,8 +316,13 @@ function buildWaMessage(d: Inspection, reportUrl: string) {
   lines.push("");
   lines.push(`📸 ${photoCount} foto terlampir`);
   if (reportUrl) {
-    lines.push(`🔗 Laporan lengkap & semua foto:`);
+    lines.push(`🔗 Laporan online (lihat foto):`);
     lines.push(reportUrl);
+  }
+  if (d.excel_url) {
+    lines.push("");
+    lines.push(`📊 Download laporan Excel (.xlsx):`);
+    lines.push(d.excel_url);
   }
   lines.push("");
   lines.push(`ID Laporan: ${d.id.slice(0, 8)}`);
