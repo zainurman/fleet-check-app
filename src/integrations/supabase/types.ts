@@ -14,7 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      vehicle_inspections: {
+        Row: {
+          checklist: Json
+          created_at: string
+          driver_id: string
+          driver_name: string
+          failed_items: Json
+          id: string
+          notes: string | null
+          odometer: string | null
+          overall_status: string
+          vehicle_plate: string
+          vehicle_type: string | null
+          whatsapp_error: string | null
+          whatsapp_sent: boolean
+        }
+        Insert: {
+          checklist?: Json
+          created_at?: string
+          driver_id: string
+          driver_name: string
+          failed_items?: Json
+          id?: string
+          notes?: string | null
+          odometer?: string | null
+          overall_status?: string
+          vehicle_plate: string
+          vehicle_type?: string | null
+          whatsapp_error?: string | null
+          whatsapp_sent?: boolean
+        }
+        Update: {
+          checklist?: Json
+          created_at?: string
+          driver_id?: string
+          driver_name?: string
+          failed_items?: Json
+          id?: string
+          notes?: string | null
+          odometer?: string | null
+          overall_status?: string
+          vehicle_plate?: string
+          vehicle_type?: string | null
+          whatsapp_error?: string | null
+          whatsapp_sent?: boolean
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
