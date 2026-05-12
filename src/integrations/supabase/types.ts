@@ -18,13 +18,19 @@ export type Database = {
         Row: {
           checklist: Json
           created_at: string
+          delivery_destination: string | null
           driver_id: string
           driver_name: string
           failed_items: Json
           id: string
+          kir_expiry: string | null
           notes: string | null
           odometer: string | null
           overall_status: string
+          photos: Json
+          stnk_expiry: string | null
+          tire_pressure_front: string | null
+          tire_pressure_rear: string | null
           vehicle_plate: string
           vehicle_type: string | null
           whatsapp_error: string | null
@@ -33,13 +39,19 @@ export type Database = {
         Insert: {
           checklist?: Json
           created_at?: string
+          delivery_destination?: string | null
           driver_id: string
           driver_name: string
           failed_items?: Json
           id?: string
+          kir_expiry?: string | null
           notes?: string | null
           odometer?: string | null
           overall_status?: string
+          photos?: Json
+          stnk_expiry?: string | null
+          tire_pressure_front?: string | null
+          tire_pressure_rear?: string | null
           vehicle_plate: string
           vehicle_type?: string | null
           whatsapp_error?: string | null
@@ -48,13 +60,19 @@ export type Database = {
         Update: {
           checklist?: Json
           created_at?: string
+          delivery_destination?: string | null
           driver_id?: string
           driver_name?: string
           failed_items?: Json
           id?: string
+          kir_expiry?: string | null
           notes?: string | null
           odometer?: string | null
           overall_status?: string
+          photos?: Json
+          stnk_expiry?: string | null
+          tire_pressure_front?: string | null
+          tire_pressure_rear?: string | null
           vehicle_plate?: string
           vehicle_type?: string | null
           whatsapp_error?: string | null

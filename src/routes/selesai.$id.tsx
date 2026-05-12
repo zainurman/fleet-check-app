@@ -1,6 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { CheckCircle2, AlertTriangle, MessageCircle, Home, Loader2 } from "lucide-react";
+import {
+  CheckCircle2,
+  AlertTriangle,
+  MessageCircle,
+  Home,
+  Loader2,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { OPS_WHATSAPP_NUMBER } from "@/lib/config";
 
@@ -13,10 +19,14 @@ type Inspection = {
   id: string;
   driver_name: string;
   driver_id: string;
+  delivery_destination: string | null;
   vehicle_plate: string;
-  vehicle_type: string | null;
-  odometer: string | null;
+  stnk_expiry: string | null;
+  kir_expiry: string | null;
+  tire_pressure_front: string | null;
+  tire_pressure_rear: string | null;
   failed_items: { label: string; category: string }[];
+  photos: Record<string, string>;
   notes: string | null;
   overall_status: string;
   created_at: string;
@@ -51,7 +61,10 @@ function SuccessPage() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-4 text-center">
         <p className="text-muted-foreground">Laporan tidak ditemukan.</p>
-        <Link to="/" className="rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground">
+        <Link
+          to="/"
+          className="rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground"
+        >
           Kembali ke Beranda
         </Link>
       </div>
@@ -59,8 +72,12 @@ function SuccessPage() {
   }
 
   const isPass = data.overall_status === "lulus";
-  const waMessage = buildWaMessage(data);
+  const reportUrl =
+    typeof window !== "undefined" ? `${window.location.origin}/selesai/${id}` : "";
+  const waMessage = buildWaMessage(data, reportUrl);
   const waUrl = `https://wa.me/${OPS_WHATSAPP_NUMBER}?text=${encodeURIComponent(waMessage)}`;
+
+  const photoEntries = Object.entries(data.photos || {});
 
   async function markSent() {
     await supabase
@@ -71,9 +88,8 @@ function SuccessPage() {
 
   return (
     <div className="min-h-screen bg-background pb-10">
-      {/* Status header */}
       <div
-        className={`px-5 pb-10 pt-12 text-center text-white`}
+        className="px-5 pb-10 pt-12 text-center text-white"
         style={{
           background: isPass
             ? "linear-gradient(135deg, oklch(0.55 0.17 150), oklch(0.65 0.17 150))"
@@ -97,17 +113,32 @@ function SuccessPage() {
         </p>
       </div>
 
-      <main className="mx-auto -mt-6 max-w-2xl px-4">
-        {/* Summary card */}
+      <main className="mx-auto -mt-6 max-w-2xl space-y-5 px-4">
         <div className="rounded-2xl border bg-card p-5 shadow-md">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Ringkasan Laporan
           </h2>
           <div className="mt-3 space-y-2 text-sm">
-            <Row label="Driver" value={`${data.driver_name} (${data.driver_id})`} />
-            <Row label="Kendaraan" value={data.vehicle_plate} />
-            {data.vehicle_type && <Row label="Jenis" value={data.vehicle_type} />}
-            {data.odometer && <Row label="Odometer" value={`${data.odometer} km`} />}
+            <Row
+              label="Driver"
+              value={`${data.driver_name} (${data.driver_id})`}
+            />
+            {data.delivery_destination && (
+              <Row label="Tujuan" value={data.delivery_destination} />
+            )}
+            <Row label="Plat" value={data.vehicle_plate} />
+            {data.stnk_expiry && (
+              <Row label="STNK berlaku" value={formatDateOnly(data.stnk_expiry)} />
+            )}
+            {data.kir_expiry && (
+              <Row label="KIR berlaku" value={formatDateOnly(data.kir_expiry)} />
+            )}
+            {(data.tire_pressure_front || data.tire_pressure_rear) && (
+              <Row
+                label="Tekanan ban"
+                value={`Depan ${data.tire_pressure_front || "-"} psi · Belakang ${data.tire_pressure_rear || "-"} psi`}
+              />
+            )}
             <Row label="Waktu" value={formatDate(data.created_at)} />
           </div>
 
@@ -140,11 +171,43 @@ function SuccessPage() {
           )}
         </div>
 
-        {/* WA Send */}
-        <div className="mt-5 rounded-2xl border bg-card p-5 shadow-sm">
+        {photoEntries.length > 0 && (
+          <div className="rounded-2xl border bg-card p-5 shadow-sm">
+            <h2 className="text-base font-semibold">
+              Foto ({photoEntries.length})
+            </h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Tap foto untuk perbesar.
+            </p>
+            <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4">
+              {photoEntries.map(([key, url]) => (
+                <a
+                  key={key}
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block overflow-hidden rounded-lg border bg-secondary"
+                >
+                  <img
+                    src={url}
+                    alt={key}
+                    loading="lazy"
+                    className="h-24 w-full object-cover"
+                  />
+                  <div className="truncate px-1.5 py-1 text-[10px] text-muted-foreground">
+                    {key}
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="rounded-2xl border bg-card p-5 shadow-sm">
           <h2 className="text-base font-semibold">Kirim ke Staff Operasional</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Tap tombol di bawah untuk membuka WhatsApp dengan pesan laporan siap kirim.
+            Pesan WhatsApp berisi ringkasan + link laporan lengkap (termasuk
+            semua foto).
           </p>
           <a
             href={waUrl}
@@ -161,7 +224,7 @@ function SuccessPage() {
 
         <Link
           to="/"
-          className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border bg-card py-3.5 text-sm font-semibold text-foreground shadow-sm"
+          className="flex w-full items-center justify-center gap-2 rounded-2xl border bg-card py-3.5 text-sm font-semibold text-foreground shadow-sm"
         >
           <Home className="h-4 w-4" /> Kembali ke Beranda
         </Link>
@@ -189,17 +252,35 @@ function formatDate(iso: string) {
     minute: "2-digit",
   });
 }
+function formatDateOnly(iso: string) {
+  const d = new Date(iso);
+  return d.toLocaleDateString("id-ID", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
 
-function buildWaMessage(d: Inspection) {
+function buildWaMessage(d: Inspection, reportUrl: string) {
   const isPass = d.overall_status === "lulus";
   const lines: string[] = [];
   lines.push("*LAPORAN PENGECEKAN KENDARAAN*");
-  lines.push(isPass ? "✅ Status: LULUS — Siap Berangkat" : "⚠️ Status: PERLU PERHATIAN");
+  lines.push(
+    isPass
+      ? "✅ Status: LULUS — Siap Berangkat"
+      : "⚠️ Status: PERLU PERHATIAN",
+  );
   lines.push("");
   lines.push(`👤 Driver: ${d.driver_name} (${d.driver_id})`);
+  if (d.delivery_destination) lines.push(`🎯 Tujuan: ${d.delivery_destination}`);
   lines.push(`🚛 Plat: ${d.vehicle_plate}`);
-  if (d.vehicle_type) lines.push(`🏷️ Jenis: ${d.vehicle_type}`);
-  if (d.odometer) lines.push(`📏 Odometer: ${d.odometer} km`);
+  if (d.stnk_expiry) lines.push(`📄 STNK s/d: ${formatDateOnly(d.stnk_expiry)}`);
+  if (d.kir_expiry) lines.push(`📄 KIR s/d: ${formatDateOnly(d.kir_expiry)}`);
+  if (d.tire_pressure_front || d.tire_pressure_rear) {
+    lines.push(
+      `🛞 Tekanan ban: D ${d.tire_pressure_front || "-"} psi / B ${d.tire_pressure_rear || "-"} psi`,
+    );
+  }
   lines.push(`🕒 Waktu: ${formatDate(d.created_at)}`);
 
   if (d.failed_items.length > 0) {
@@ -216,6 +297,13 @@ function buildWaMessage(d: Inspection) {
     lines.push(d.notes);
   }
 
+  const photoCount = Object.keys(d.photos || {}).length;
+  lines.push("");
+  lines.push(`📸 ${photoCount} foto terlampir`);
+  if (reportUrl) {
+    lines.push(`🔗 Laporan lengkap & semua foto:`);
+    lines.push(reportUrl);
+  }
   lines.push("");
   lines.push(`ID Laporan: ${d.id.slice(0, 8)}`);
   return lines.join("\n");
