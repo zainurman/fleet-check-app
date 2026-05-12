@@ -6,6 +6,7 @@ import {
   MessageCircle,
   Home,
   Loader2,
+  FileSpreadsheet,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { OPS_WHATSAPP_NUMBER } from "@/lib/config";
@@ -29,6 +30,7 @@ type Inspection = {
   photos: Record<string, string>;
   notes: string | null;
   overall_status: string;
+  excel_url: string | null;
   created_at: string;
 };
 
