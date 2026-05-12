@@ -21,6 +21,7 @@ export type Database = {
           delivery_destination: string | null
           driver_id: string
           driver_name: string
+          excel_url: string | null
           failed_items: Json
           id: string
           kir_expiry: string | null
@@ -42,6 +43,7 @@ export type Database = {
           delivery_destination?: string | null
           driver_id: string
           driver_name: string
+          excel_url?: string | null
           failed_items?: Json
           id?: string
           kir_expiry?: string | null
@@ -63,6 +65,7 @@ export type Database = {
           delivery_destination?: string | null
           driver_id?: string
           driver_name?: string
+          excel_url?: string | null
           failed_items?: Json
           id?: string
           kir_expiry?: string | null

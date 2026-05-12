@@ -6,6 +6,7 @@ import { CHECKLIST, VEHICLE_PHOTOS } from "@/lib/checklist-items";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { PhotoInput } from "@/components/PhotoInput";
+import { uploadInspectionExcel } from "@/lib/excel-report";
 
 export const Route = createFileRoute("/pengecekan")({
   head: () => ({ meta: [{ title: "Pengecekan Kendaraan — Driver Check" }] }),
@@ -219,12 +220,41 @@ function InspectionPage() {
       .select("id")
       .single();
 
-    setSubmitting(false);
-
     if (error || !data) {
+      setSubmitting(false);
       toast.error("Gagal menyimpan laporan. Coba lagi.");
       return;
     }
+
+    // Generate & upload Excel report (non-blocking error)
+    try {
+      const excelUrl = await uploadInspectionExcel({
+        id: data.id,
+        driver_name: driverName,
+        driver_id: driverId,
+        delivery_destination: destination,
+        vehicle_plate: plate.toUpperCase(),
+        stnk_expiry: stnkExpiry,
+        kir_expiry: kirExpiry,
+        tire_pressure_front: pressureFront,
+        tire_pressure_rear: pressureRear,
+        checklist: checks,
+        failed_items: failedItems,
+        photos,
+        notes: notes || null,
+        overall_status: failedItems.length === 0 ? "lulus" : "perlu_perhatian",
+        created_at: new Date().toISOString(),
+      });
+      await supabase
+        .from("vehicle_inspections")
+        .update({ excel_url: excelUrl })
+        .eq("id", data.id);
+    } catch (e) {
+      console.error("Excel generation failed", e);
+      toast.warning("Laporan tersimpan, tapi file Excel gagal dibuat.");
+    }
+
+    setSubmitting(false);
     navigate({ to: "/selesai/$id", params: { id: data.id } });
   }
 
