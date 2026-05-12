@@ -9,38 +9,65 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PengecekanRouteImport } from './routes/pengecekan'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SelesaiIdRouteImport } from './routes/selesai.$id'
 
+const PengecekanRoute = PengecekanRouteImport.update({
+  id: '/pengecekan',
+  path: '/pengecekan',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SelesaiIdRoute = SelesaiIdRouteImport.update({
+  id: '/selesai/$id',
+  path: '/selesai/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/pengecekan': typeof PengecekanRoute
+  '/selesai/$id': typeof SelesaiIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/pengecekan': typeof PengecekanRoute
+  '/selesai/$id': typeof SelesaiIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/pengecekan': typeof PengecekanRoute
+  '/selesai/$id': typeof SelesaiIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/pengecekan' | '/selesai/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/pengecekan' | '/selesai/$id'
+  id: '__root__' | '/' | '/pengecekan' | '/selesai/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  PengecekanRoute: typeof PengecekanRoute
+  SelesaiIdRoute: typeof SelesaiIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/pengecekan': {
+      id: '/pengecekan'
+      path: '/pengecekan'
+      fullPath: '/pengecekan'
+      preLoaderRoute: typeof PengecekanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +75,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/selesai/$id': {
+      id: '/selesai/$id'
+      path: '/selesai/$id'
+      fullPath: '/selesai/$id'
+      preLoaderRoute: typeof SelesaiIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  PengecekanRoute: PengecekanRoute,
+  SelesaiIdRoute: SelesaiIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
